@@ -99,7 +99,7 @@
 				
 				<option value="file21">github.com/Checkmarx/kics/internal/tracker/ci.go (81.2%)</option>
 				
-				<option value="file22">github.com/Checkmarx/kics/pkg/analyzer/analyzer.go (88.9%)</option>
+				<option value="file22">github.com/Checkmarx/kics/pkg/analyzer/analyzer.go (88.1%)</option>
 				
 				<option value="file23">github.com/Checkmarx/kics/pkg/builder/engine/engine.go (71.8%)</option>
 				
@@ -159,9 +159,9 @@
 				
 				<option value="file51">github.com/Checkmarx/kics/pkg/model/model_easyjson.go (34.7%)</option>
 				
-				<option value="file52">github.com/Checkmarx/kics/pkg/model/model_yaml.go (89.4%)</option>
+				<option value="file52">github.com/Checkmarx/kics/pkg/model/model_yaml.go (86.8%)</option>
 				
-				<option value="file53">github.com/Checkmarx/kics/pkg/model/summary.go (86.4%)</option>
+				<option value="file53">github.com/Checkmarx/kics/pkg/model/summary.go (87.0%)</option>
 				
 				<option value="file54">github.com/Checkmarx/kics/pkg/parser/buildah/comments.go (100.0%)</option>
 				
@@ -195,7 +195,7 @@
 				
 				<option value="file69">github.com/Checkmarx/kics/pkg/parser/terraform/comment/comment.go (96.8%)</option>
 				
-				<option value="file70">github.com/Checkmarx/kics/pkg/parser/terraform/converter/default.go (77.5%)</option>
+				<option value="file70">github.com/Checkmarx/kics/pkg/parser/terraform/converter/default.go (76.5%)</option>
 				
 				<option value="file71">github.com/Checkmarx/kics/pkg/parser/terraform/data_source.go (76.1%)</option>
 				
@@ -221,7 +221,7 @@
 				
 				<option value="file82">github.com/Checkmarx/kics/pkg/report/commons.go (82.0%)</option>
 				
-				<option value="file83">github.com/Checkmarx/kics/pkg/report/cyclonedx.go (87.5%)</option>
+				<option value="file83">github.com/Checkmarx/kics/pkg/report/cyclonedx.go (81.8%)</option>
 				
 				<option value="file84">github.com/Checkmarx/kics/pkg/report/gitlab_sast.go (93.3%)</option>
 				
@@ -233,11 +233,11 @@
 				
 				<option value="file88">github.com/Checkmarx/kics/pkg/report/model/asff.go (85.3%)</option>
 				
-				<option value="file89">github.com/Checkmarx/kics/pkg/report/model/cyclonedx.go (91.2%)</option>
+				<option value="file89">github.com/Checkmarx/kics/pkg/report/model/cyclonedx.go (91.4%)</option>
 				
 				<option value="file90">github.com/Checkmarx/kics/pkg/report/model/gitlab_sast.go (75.0%)</option>
 				
-				<option value="file91">github.com/Checkmarx/kics/pkg/report/model/junit.go (77.3%)</option>
+				<option value="file91">github.com/Checkmarx/kics/pkg/report/model/junit.go (94.4%)</option>
 				
 				<option value="file92">github.com/Checkmarx/kics/pkg/report/model/sarif.go (94.0%)</option>
 				
@@ -2376,7 +2376,7 @@ func (m *Metrics) formatTotal(b int64, typeMap map[string]float64, defaultMetric
                 <span class="cov1" title="1">return fmt.Sprintf("%.f%s", metric, defaultMetric)</span>
         }
         <span class="cov6" title="10">for k, u := range typeMap </span><span class="cov10" title="55">{
-                if u &gt;= formatter &amp;&amp; (value/u) &gt;= 1.0 </span><span class="cov8" title="25">{
+                if u &gt;= formatter &amp;&amp; (value/u) &gt;= 1.0 </span><span class="cov6" title="14">{
                         formatter = u
                         mesure = k
                 }</span>
@@ -2615,6 +2615,9 @@ var (
         tfPlanRegexRC                     = regexp.MustCompile("\\s*\"resource_changes\":")
         tfPlanRegexConf                   = regexp.MustCompile("\\s*\"configuration\":")
         tfPlanRegexTV                     = regexp.MustCompile("\\s*\"terraform_version\":")
+        cdkTfRegexMetadata                = regexp.MustCompile("\\s*\"metadata\":")
+        cdkTfRegexStackName               = regexp.MustCompile("\\s*\"stackName\":")
+        cdkTfRegexTerraform               = regexp.MustCompile("\\s*\"terraform\":")
         blueprintArtifactsRegexKind       = regexp.MustCompile("(\\s*\"kind\":)|(\\s*kind:)")
         blueprintArtifactsRegexProperties = regexp.MustCompile("(\\s*\"properties\":)|(\\s*properties:)")
         blueprintRegexTargetScope         = regexp.MustCompile("(\\s*\"targetScope\":)|(\\s*targetScope:)")
@@ -2713,7 +2716,7 @@ func worker(path string, results, unwanted chan&lt;- string, wg *sync.WaitGroup)
         case ".sh":<span class="cov0" title="0">
                 checkContent(path, results, unwanted, ext)</span>
         // Cloud Formation, Ansible, OpenAPI
-        case yaml, yml, json:<span class="cov6" title="18">
+        case yaml, yml, json:<span class="cov5" title="18">
                 checkContent(path, results, unwanted, ext)</span>
         }
 }
@@ -2758,6 +2761,13 @@ var types = map[string]regexSlice{
                         tfPlanRegexTV,
                 },
         },
+        "cdkTf": {
+                []*regexp.Regexp{
+                        cdkTfRegexMetadata,
+                        cdkTfRegexStackName,
+                        cdkTfRegexTerraform,
+                },
+        },
         "blueprintsartifacts": {
                 []*regexp.Regexp{
                         blueprintArtifactsRegexKind,
@@ -2778,16 +2788,16 @@ var types = map[string]regexSlice{
 }
 
 // overrides k8s match when all regexs passes for azureresourcemanager key and extension is set to json
-func needsOverride(check bool, returnType, key, ext string) bool <span class="cov9" title="133">{
+func needsOverride(check bool, returnType, key, ext string) bool <span class="cov9" title="151">{
         if check &amp;&amp; returnType == kubernetes &amp;&amp; key == "azureresourcemanager" &amp;&amp; ext == json </span><span class="cov0" title="0">{
                 return true
         }</span>
-        <span class="cov9" title="133">return false</span>
+        <span class="cov9" title="151">return false</span>
 }
 
 // checkContent will determine the file type by content when worker was unable to
 // determine by ext, if no type was determined checkContent adds it to unwanted channel
-func checkContent(path string, results, unwanted chan&lt;- string, ext string) <span class="cov6" title="18">{
+func checkContent(path string, results, unwanted chan&lt;- string, ext string) <span class="cov5" title="18">{
         // get file content
         content, err := os.ReadFile(path)
         if err != nil </span><span class="cov0" title="0">{
@@ -2795,32 +2805,32 @@ func checkContent(path string, results, unwanted chan&lt;- string, ext string) <
                 return
         }</span>
 
-        <span class="cov6" title="18">returnType := ""
+        <span class="cov5" title="18">returnType := ""
 
         // Sort map so that CloudFormation (type that as less requireds) goes last
         keys := make([]string, 0, len(types))
-        for k := range types </span><span class="cov9" title="144">{
+        for k := range types </span><span class="cov9" title="162">{
                 keys = append(keys, k)
         }</span>
 
-        <span class="cov6" title="18">sort.Sort(sort.Reverse(sort.StringSlice(keys)))
+        <span class="cov5" title="18">sort.Sort(sort.Reverse(sort.StringSlice(keys)))
 
-        for _, key := range keys </span><span class="cov9" title="144">{
+        for _, key := range keys </span><span class="cov9" title="162">{
                 check := true
-                for _, typeRegex := range types[key].regex </span><span class="cov10" title="169">{
-                        if res := typeRegex.Match(content); !res </span><span class="cov9" title="133">{
+                for _, typeRegex := range types[key].regex </span><span class="cov10" title="187">{
+                        if res := typeRegex.Match(content); !res </span><span class="cov9" title="151">{
                                 check = false
                                 break</span>
                         }
                 }
                 // If all regexs passed and there wasn't a type already assigned
-                <span class="cov9" title="144">if check &amp;&amp; returnType == "" </span><span class="cov5" title="11">{
+                <span class="cov9" title="162">if check &amp;&amp; returnType == "" </span><span class="cov5" title="11">{
                         returnType = key
-                }</span> else<span class="cov9" title="133"> if needsOverride(check, returnType, key, ext) </span><span class="cov0" title="0">{
+                }</span> else<span class="cov9" title="151"> if needsOverride(check, returnType, key, ext) </span><span class="cov0" title="0">{
                         returnType = key
                 }</span>
         }
-        <span class="cov6" title="18">returnType = checkReturnType(path, returnType, ext, content)
+        <span class="cov5" title="18">returnType = checkReturnType(path, returnType, ext, content)
         if returnType != "" </span><span class="cov5" title="17">{
                 results &lt;- returnType
                 return
@@ -2829,9 +2839,12 @@ func checkContent(path string, results, unwanted chan&lt;- string, ext string) <
         <span class="cov1" title="1">unwanted &lt;- path</span>
 }
 
-func checkReturnType(path, returnType, ext string, content []byte) string <span class="cov6" title="18">{
+func checkReturnType(path, returnType, ext string, content []byte) string <span class="cov5" title="18">{
         if returnType != "" </span><span class="cov5" title="11">{
-                if returnType == "blueprint" || returnType == "blueprintsartifacts" </span><span class="cov0" title="0">{
+                if returnType == "cdkTf" </span><span class="cov0" title="0">{
+                        return "terraform"
+                }</span>
+                <span class="cov5" title="11">if returnType == "blueprint" || returnType == "blueprintsartifacts" </span><span class="cov0" title="0">{
                         return arm
                 }</span>
         } else<span class="cov4" title="7"> if ext == yaml || ext == yml </span><span class="cov4" title="6">{
@@ -2891,7 +2904,7 @@ func createSlice(chanel chan string) []string <span class="cov5" title="12">{
 // contains is a simple method to check if a slice
 // contains an entry
 func contains(s []string, e string) bool <span class="cov6" title="22">{
-        for _, a := range s </span><span class="cov7" title="49">{
+        for _, a := range s </span><span class="cov7" title="50">{
                 if a == e </span><span class="cov4" title="8">{
                         return true
                 }</span>
@@ -4681,7 +4694,7 @@ func createVulnLines(startPos int, lines []string) []model.CodeLine <span class=
 func SelectLineWithMinimumDistance(distances map[int]int, startingFrom int) int <span class="cov5" title="7">{
         minDistance, lineOfMinDistance := constants.MaxInteger, startingFrom
         for line, distance := range distances </span><span class="cov6" title="10">{
-                if distance &lt; minDistance || distance == minDistance &amp;&amp; line &lt; lineOfMinDistance </span><span class="cov5" title="8">{
+                if distance &lt; minDistance || distance == minDistance &amp;&amp; line &lt; lineOfMinDistance </span><span class="cov5" title="7">{
                         minDistance = distance
                         lineOfMinDistance = line
                 }</span>
@@ -5463,7 +5476,7 @@ func GetSources(source []string) (ExtractedPath, error) <span class="cov10" titl
 
                 getterDst, err := getPaths(&amp;goGetter)
                 if err != nil </span><span class="cov4" title="2">{
-                        log.Error().Msgf("failed to find path %s: %s", path, err)
+                        log.Error().Msgf("%s", err)
                         return ExtractedPath{}, err
                 }</span>
                 <span class="cov7" title="3">tempDst, local := checkSymLink(getterDst, path)
@@ -5708,12 +5721,12 @@ func (s *FileSystemSourceProvider) GetSources(ctx context.Context,
 
 func (s *FileSystemSourceProvider) walkDir(ctx context.Context, scanPath string, resolved bool,
         sink Sink, resolverSink ResolverSink, extensions model.Extensions) error <span class="cov1" title="3">{
-        return filepath.Walk(scanPath, func(path string, info os.FileInfo, err error) error </span><span class="cov9" title="24815">{
+        return filepath.Walk(scanPath, func(path string, info os.FileInfo, err error) error </span><span class="cov9" title="25061">{
                 if err != nil </span><span class="cov0" title="0">{
                         return err
                 }</span>
 
-                <span class="cov9" title="24815">if shouldSkip, skipFolder := s.checkConditions(info, extensions, path, resolved); shouldSkip </span><span class="cov9" title="24576">{
+                <span class="cov9" title="25061">if shouldSkip, skipFolder := s.checkConditions(info, extensions, path, resolved); shouldSkip </span><span class="cov9" title="24822">{
                         return skipFolder
                 }</span>
 
@@ -5780,24 +5793,24 @@ func closeFile(file *os.File, info os.FileInfo) <span class="cov5" title="238">{
 }
 
 func (s *FileSystemSourceProvider) checkConditions(info os.FileInfo, extensions model.Extensions,
-        path string, resolved bool) (bool, error) <span class="cov10" title="24818">{
-        if info.IsDir() </span><span class="cov8" title="5518">{
+        path string, resolved bool) (bool, error) <span class="cov10" title="25064">{
+        if info.IsDir() </span><span class="cov8" title="5570">{
                 if f, ok := s.excludes[info.Name()]; ok &amp;&amp; containsFile(f, info) </span><span class="cov1" title="1">{
                         log.Info().Msgf("Directory ignored: %s", path)
                         return true, filepath.SkipDir
                 }</span>
-                <span class="cov8" title="5517">_, err := os.Stat(filepath.Join(path, "Chart.yaml"))
-                if err != nil || resolved </span><span class="cov8" title="5515">{
+                <span class="cov8" title="5569">_, err := os.Stat(filepath.Join(path, "Chart.yaml"))
+                if err != nil || resolved </span><span class="cov8" title="5567">{
                         return true, nil
                 }</span>
                 <span class="cov1" title="2">return false, nil</span>
         }
 
-        <span class="cov9" title="19300">if f, ok := s.excludes[info.Name()]; ok &amp;&amp; containsFile(f, info) </span><span class="cov0" title="0">{
+        <span class="cov9" title="19494">if f, ok := s.excludes[info.Name()]; ok &amp;&amp; containsFile(f, info) </span><span class="cov0" title="0">{
                 log.Trace().Msgf("File ignored: %s", path)
                 return true, nil
         }</span>
-        <span class="cov9" title="19300">if !extensions.Include(filepath.Ext(path)) &amp;&amp; !extensions.Include(filepath.Base(path)) </span><span class="cov9" title="19062">{
+        <span class="cov9" title="19494">if !extensions.Include(filepath.Ext(path)) &amp;&amp; !extensions.Include(filepath.Base(path)) </span><span class="cov9" title="19256">{
                 return true, nil
         }</span>
         <span class="cov5" title="238">return false, nil</span>
@@ -8535,9 +8548,13 @@ func unmarshal(val *yaml.Node) interface{} <span class="cov9" title="13">{
                                         }</span>
                                         <span class="cov3" title="2">tmp[val.Content[i].Value] = contentArray</span>
                                 case yaml.AliasNode:<span class="cov0" title="0">
-                                        tt := unmarshal(val.Content[i+1].Alias).(map[string]interface{})
-                                        tt["_kics_lines"] = getLines(val.Content[i+1], val.Content[i].Line)
-                                        utils.MergeMaps(tmp, tt)</span>
+                                        if tt, ok := unmarshal(val.Content[i+1].Alias).(map[string]interface{}); ok </span><span class="cov0" title="0">{
+                                                tt["_kics_lines"] = getLines(val.Content[i+1], val.Content[i].Line)
+                                                utils.MergeMaps(tmp, tt)
+                                        }</span>
+                                        <span class="cov0" title="0">if v, ok := unmarshal(val.Content[i+1].Alias).(string); ok </span><span class="cov0" title="0">{
+                                                tmp[val.Content[i].Value] = v
+                                        }</span>
                                 }
                         }
                 }
@@ -8728,9 +8745,10 @@ type Summary struct {
         Counters
         SeveritySummary
         Times
-        ScannedPaths []string         `json:"paths"`
-        Queries      QueryResultSlice `json:"queries"`
-        Bom          QueryResultSlice `json:"bill_of_materials,omitempty"`
+        ScannedPaths []string          `json:"paths"`
+        Queries      QueryResultSlice  `json:"queries"`
+        Bom          QueryResultSlice  `json:"bill_of_materials,omitempty"`
+        FilePaths    map[string]string `json:"-"`
 }
 
 // PathParameters - structure wraps the required fields for temporary path translation
@@ -8819,6 +8837,8 @@ func CreateSummary(counters Counters, vulnerabilities []Vulnerability,
         severitySummary := SeveritySummary{
                 ScanID: scanID,
         }
+        filePaths := make(map[string]string)
+
         for i := range vulnerabilities </span><span class="cov1" title="1">{
                 item := vulnerabilities[i]
                 if _, ok := q[item.QueryID]; !ok </span><span class="cov1" title="1">{
@@ -8835,9 +8855,11 @@ func CreateSummary(counters Counters, vulnerabilities []Vulnerability,
                         }
                 }</span>
 
-                <span class="cov1" title="1">qItem := q[item.QueryID]
+                <span class="cov1" title="1">resolvedPath := resolvePath(item.FileName, pathExtractionMap)
+
+                qItem := q[item.QueryID]
                 qItem.Files = append(qItem.Files, VulnerableFile{
-                        FileName:         resolvePath(item.FileName, pathExtractionMap),
+                        FileName:         resolvedPath,
                         SimilarityID:     item.SimilarityID,
                         Line:             item.Line,
                         VulnLines:        item.VulnLines,
@@ -8848,6 +8870,8 @@ func CreateSummary(counters Counters, vulnerabilities []Vulnerability,
                         KeyActualValue:   item.KeyActualValue,
                         Value:            item.Value,
                 })
+
+                filePaths[resolvedPath] = item.FileName
 
                 q[item.QueryID] = qItem</span>
         }
@@ -8890,6 +8914,7 @@ func CreateSummary(counters Counters, vulnerabilities []Vulnerability,
                 SeveritySummary: severitySummary,
                 ScannedPaths:    removeAllURLCredentials(pathExtractionMap),
                 LatestVersion:   version,
+                FilePaths:       filePaths,
         }</span>
 }
 </pre>
@@ -13128,13 +13153,21 @@ func (c *converter) rangeSource(r hcl.Range) string <span class="cov8" title="35
 
 func (c *converter) convertBody(body *hclsyntax.Body, defLine int) (model.Document, error) <span class="cov7" title="23">{
         var err error
+        var v string
         countValue := body.Attributes["count"]
         count := -1
 
         if countValue != nil </span><span class="cov0" title="0">{
                 value, err := countValue.Expr.Value(nil)
                 if err == nil </span><span class="cov0" title="0">{
-                        intValue, err := strconv.Atoi(value.AsBigFloat().String())
+                        switch value.Type() </span>{
+                        case cty.String:<span class="cov0" title="0">
+                                v = value.AsString()</span>
+                        case cty.Number:<span class="cov0" title="0">
+                                v = value.AsBigFloat().String()</span>
+                        }
+
+                        <span class="cov0" title="0">intValue, err := strconv.Atoi(v)
                         if err == nil </span><span class="cov0" title="0">{
                                 count = intValue
                         }</span>
@@ -14347,23 +14380,23 @@ func (p *Parser) Resolve(fileContent []byte, filename string) (*[]byte, error) <
 }</span>
 
 // Parse parses yaml/yml file and returns it as a Document
-func (p *Parser) Parse(filePath string, fileContent []byte) ([]model.Document, []int, error) <span class="cov7" title="5">{
+func (p *Parser) Parse(filePath string, fileContent []byte) ([]model.Document, []int, error) <span class="cov6" title="6">{
         var documents []model.Document
         dec := yaml.NewDecoder(bytes.NewReader(fileContent))
 
         doc := &amp;model.Document{}
-        for dec.Decode(doc) == nil </span><span class="cov6" title="4">{
-                if doc != nil </span><span class="cov6" title="4">{
+        for dec.Decode(doc) == nil </span><span class="cov6" title="5">{
+                if doc != nil </span><span class="cov6" title="5">{
                         documents = append(documents, *doc)
                 }</span>
-                <span class="cov6" title="4">doc = &amp;model.Document{}</span>
+                <span class="cov6" title="5">doc = &amp;model.Document{}</span>
         }
 
-        <span class="cov7" title="5">if len(documents) == 0 </span><span class="cov3" title="2">{
+        <span class="cov6" title="6">if len(documents) == 0 </span><span class="cov3" title="2">{
                 return nil, []int{}, errors.Wrap(errors.New("invalid yaml"), "failed to parse yaml")
         }</span>
 
-        <span class="cov5" title="3">linesToIgnore := model.NewIgnore.GetLines()
+        <span class="cov5" title="4">linesToIgnore := model.NewIgnore.GetLines()
         model.NewIgnore.Reset()
 
         return convertKeysToString(addExtraInfo(documents, filePath)), linesToIgnore, nil</span>
@@ -14371,20 +14404,20 @@ func (p *Parser) Parse(filePath string, fileContent []byte) ([]model.Document, [
 
 // convertKeysToString goes through every document to convert map[interface{}]interface{}
 // to map[string]interface{}
-func convertKeysToString(docs []model.Document) []model.Document <span class="cov5" title="3">{
+func convertKeysToString(docs []model.Document) []model.Document <span class="cov5" title="4">{
         documents := make([]model.Document, 0, len(docs))
-        for _, doc := range docs </span><span class="cov6" title="4">{
-                for key, value := range doc </span><span class="cov9" title="9">{
+        for _, doc := range docs </span><span class="cov6" title="5">{
+                for key, value := range doc </span><span class="cov8" title="11">{
                         doc[key] = convert(value)
                 }</span>
-                <span class="cov6" title="4">documents = append(documents, doc)</span>
+                <span class="cov6" title="5">documents = append(documents, doc)</span>
         }
-        <span class="cov5" title="3">return documents</span>
+        <span class="cov5" title="4">return documents</span>
 }
 
 // convert goes recursively through the keys in the given value and converts nested maps type of map[interface{}]interface{}
 // to map[string]interface{}
-func convert(value interface{}) interface{} <span class="cov10" title="11">{
+func convert(value interface{}) interface{} <span class="cov10" title="15">{
         switch t := value.(type) </span>{
         case map[interface{}]interface{}:<span class="cov0" title="0">
                 mapStr := map[string]interface{}{}
@@ -14394,8 +14427,8 @@ func convert(value interface{}) interface{} <span class="cov10" title="11">{
                         }</span>
                 }
                 <span class="cov0" title="0">return mapStr</span>
-        case []interface{}:<span class="cov3" title="2">
-                for key, val := range t </span><span class="cov3" title="2">{
+        case []interface{}:<span class="cov4" title="3">
+                for key, val := range t </span><span class="cov5" title="4">{
                         t[key] = convert(val)
                 }</span>
         case model.Document:<span class="cov0" title="0">
@@ -14403,7 +14436,7 @@ func convert(value interface{}) interface{} <span class="cov10" title="11">{
                         t[key] = convert(val)
                 }</span>
         }
-        <span class="cov10" title="11">return value</span>
+        <span class="cov10" title="15">return value</span>
 }
 
 // SupportedExtensions returns extensions supported by this parser, which are yaml and yml extension
@@ -14447,14 +14480,14 @@ func processElements(elements map[string]interface{}, filePath string) <span cla
         }</span>
 }
 
-func addExtraInfo(documents []model.Document, filePath string) []model.Document <span class="cov5" title="3">{
-        for _, documentPlaybooks := range documents </span><span class="cov6" title="4">{ // iterate over documents
+func addExtraInfo(documents []model.Document, filePath string) []model.Document <span class="cov5" title="4">{
+        for _, documentPlaybooks := range documents </span><span class="cov6" title="5">{ // iterate over documents
                 if playbooks, ok := documentPlaybooks["playbooks"]; ok </span><span class="cov1" title="1">{
                         processPlaybooks(playbooks, filePath)
                 }</span>
         }
 
-        <span class="cov5" title="3">return documents</span>
+        <span class="cov5" title="4">return documents</span>
 }
 
 func processPlaybooks(playbooks interface{}, filePath string) <span class="cov1" title="1">{
@@ -14843,22 +14876,28 @@ func exportXMLReport(path, filename string, body interface{}) error <span class=
 import (
         "strings"
 
+        "github.com/Checkmarx/kics/pkg/model"
         reportModel "github.com/Checkmarx/kics/pkg/report/model"
 )
 
 // PrintCycloneDxReport prints the CycloneDX report in the given path and filename with the given body
 func PrintCycloneDxReport(path, filename string, body interface{}) error <span class="cov10" title="2">{
+        filePaths := make(map[string]string)
+
         if !strings.HasPrefix(filename, "cyclonedx-") </span><span class="cov10" title="2">{
                 filename = "cyclonedx-" + filename
         }</span>
 
         <span class="cov10" title="2">if body != "" </span><span class="cov10" title="2">{
-                summary, err := getSummary(body)
+                if s, ok := body.(*model.Summary); ok </span><span class="cov0" title="0">{
+                        filePaths = s.FilePaths
+                }</span>
+                <span class="cov10" title="2">summary, err := getSummary(body)
                 if err != nil </span><span class="cov0" title="0">{
                         return err
                 }</span>
 
-                <span class="cov10" title="2">body = reportModel.BuildCycloneDxReport(&amp;summary)</span>
+                <span class="cov10" title="2">body = reportModel.BuildCycloneDxReport(&amp;summary, filePaths)</span>
         }
 
         <span class="cov10" title="2">return exportXMLReport(path, filename, body)</span>
@@ -15151,7 +15190,7 @@ type Compliance struct {
 
 // BuildASFF builds the ASFF report
 func BuildASFF(summary *model.Summary) []AwsSecurityFinding <span class="cov1" title="1">{
-        var findings []AwsSecurityFinding
+        findings := []AwsSecurityFinding{}
 
         awsAccountInfo := getAwsAccountInfo()
 
@@ -15386,11 +15425,12 @@ func getAllFiles(summary *model.Summary) []model.VulnerableFile <span class="cov
         <span class="cov1" title="1">return fileNames</span>
 }
 
-func generateSha256(filePath string) string <span class="cov4" title="2">{
-        content, err := os.ReadFile(filepath.Clean(filePath))
+func generateSha256(filePath string, filePaths map[string]string) string <span class="cov4" title="2">{
+        file := filePaths[filePath]
+        content, err := os.ReadFile(filepath.Clean(file))
 
         if err != nil </span><span class="cov0" title="0">{
-                log.Trace().Msgf("failed to read %s", filePath)
+                log.Trace().Msgf("failed to read %s", file)
                 return ""
         }</span>
 
@@ -15482,7 +15522,7 @@ func InitCycloneDxReport() *CycloneDxReport <span class="cov4" title="2">{
 }</span>
 
 // BuildCycloneDxReport builds the CycloneDX report
-func BuildCycloneDxReport(summary *model.Summary) *CycloneDxReport <span class="cov1" title="1">{
+func BuildCycloneDxReport(summary *model.Summary, filePaths map[string]string) *CycloneDxReport <span class="cov1" title="1">{
         var component Component
         var vuln []Vulnerability
         var version, sha, purl, filePath string
@@ -15492,7 +15532,7 @@ func BuildCycloneDxReport(summary *model.Summary) *CycloneDxReport <span class="
 
         for i := range files </span><span class="cov4" title="2">{
                 filePath = strings.Replace(files[i].FileName, "\\", "/", -1)
-                sha = generateSha256(filePath)
+                sha = generateSha256(files[i].FileName, filePaths)
 
                 index := 12
                 if len(sha) &lt; index </span><span class="cov0" title="0">{
@@ -15709,9 +15749,10 @@ type junitTestSuite struct {
 }
 
 type junitTestCase struct {
-        XMLName  xml.Name       `xml:"testcase"`
-        Name     string         `xml:"name,attr"`
-        Failures []junitFailure `xml:"failure"`
+        XMLName   xml.Name       `xml:"testcase"`
+        Name      string         `xml:"name,attr"`
+        ClassName string         `xml:"classname,attr"`
+        Failures  []junitFailure `xml:"failure"`
 }
 
 type junitFailure struct {
@@ -15732,7 +15773,7 @@ func NewJUnitReport(time string) JUnitReport <span class="cov10" title="3">{
                 Name:       fmt.Sprintf("KICS v%s", constants.Version),
                 Time:       time,
                 Failures:   "",
-                TestSuites: make([]junitTestSuite, 0),
+                TestSuites: []junitTestSuite{},
         }
 }</span>
 
@@ -15742,14 +15783,18 @@ func (jUnit *junitTestSuites) GenerateTestEntry(query *model.QueryResult) <span 
         if query.CISDescriptionTextFormatted != "" </span><span class="cov0" title="0">{
                 queryDescription = query.CISDescriptionTextFormatted
         }</span>
-        <span class="cov1" title="1">failedTestCase := junitTestCase{
-                Name:     fmt.Sprintf("[%s]: %s", query.QueryName, queryDescription),
-                Failures: make([]junitFailure, len(query.Files)),
-        }
+
+        <span class="cov1" title="1">failedTestCases := []junitTestCase{}
 
         for idx := range query.Files </span><span class="cov1" title="1">{
+                failedTestCase := junitTestCase{
+                        Name:      fmt.Sprintf("%s: %s file in line %d", query.QueryName, query.Files[idx].FileName, query.Files[idx].Line),
+                        ClassName: query.Platform,
+                        Failures:  []junitFailure{},
+                }
+
                 failedTest := junitFailure{
-                        Type: query.QueryName,
+                        Type: queryDescription,
                         Message: fmt.Sprintf(
                                 "A problem was found on '%s' file in line %d, %s, but %s.",
                                 query.Files[idx].FileName,
@@ -15758,23 +15803,19 @@ func (jUnit *junitTestSuites) GenerateTestEntry(query *model.QueryResult) <span 
                                 query.Files[idx].KeyActualValue,
                         ),
                 }
-                failedTestCase.Failures[idx] = failedTest
+
+                failedTestCase.Failures = append(failedTestCase.Failures, failedTest)
+                failedTestCases = append(failedTestCases, failedTestCase)
         }</span>
-        <span class="cov1" title="1">for idx := range jUnit.TestSuites </span><span class="cov0" title="0">{
-                if jUnit.TestSuites[idx].Name == query.Platform </span><span class="cov0" title="0">{
-                        jUnit.TestSuites[idx].TestCases = append(jUnit.TestSuites[idx].TestCases, failedTestCase)
-                        jUnit.TestSuites[idx].failCount += len(query.Files)
-                        return
-                }</span>
-        }
+
         <span class="cov1" title="1">newTestSuite := junitTestSuite{
-                Name:      fmt.Sprintf("[%s]", query.Platform),
+                Name:      query.Platform,
                 Failures:  "",
                 Tests:     "",
                 failCount: len(query.Files),
-                TestCases: make([]junitTestCase, 0),
+                TestCases: failedTestCases,
         }
-        newTestSuite.TestCases = append(newTestSuite.TestCases, failedTestCase)
+
         jUnit.TestSuites = append(jUnit.TestSuites, newTestSuite)</span>
 }
 
